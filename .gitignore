@@ -1,0 +1,15 @@
+node_modules/
+
+# The original scaffold. Superseded by the project root; kept on disk for
+# reference but not tracked, since this repo is public.
+ai-pulse-starter/
+ai-pulse-starter.zip
+
+.env
+.env.*
+!.env.example
+.env.local
+.next/
+dist/
+*.log
+.DS_Store

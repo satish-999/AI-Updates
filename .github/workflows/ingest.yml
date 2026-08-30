@@ -1,0 +1,33 @@
+name: ingest
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+# Scheduled runs are queued and can be delayed or skipped under platform load.
+# Never let two overlap — the pipeline is resumable, so waiting is always safe.
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run ingest
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          # Stop starting new sources after 7 min, comfortably inside the
+          # job timeout above. Deferred sources go first on the next run.
+          INGEST_DEADLINE_MS: "420000"
