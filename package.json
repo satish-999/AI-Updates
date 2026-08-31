@@ -6,10 +6,14 @@
   "scripts": {
     "ingest": "tsx src/ingest.ts",
     "status": "tsx src/status.ts",
-    "probe": "tsx src/probe.ts"
+    "probe": "tsx src/probe.ts",
+    "migrate": "tsx src/migrate.ts",
+    "embed": "tsx src/embed.ts",
+    "cluster": "tsx src/cluster.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
+    "@xenova/transformers": "^2.17.2",
     "dotenv": "^16.4.7",
     "rss-parser": "^3.13.0"
   },

@@ -13,3 +13,5 @@ ai-pulse-starter.zip
 dist/
 *.log
 .DS_Store
+
+.models/

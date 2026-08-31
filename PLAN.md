@@ -125,16 +125,28 @@ Two constraints that save pain later:
 ### Clustering
 
 Embed `title + first 200 words`. Compare only against stories from the
-**last 72 hours** (not the whole table).
+**last 72 hours** (not the whole table), against each story's stored centroid
+so the lookup is one indexed nearest-neighbour query, not a scan over members.
 
 ```
-cosine_similarity > 0.82  →  attach to existing story
-otherwise                 →  create new story
+cosine_similarity >= 0.75  ->  attach to existing story
+otherwise                  ->  create new story
 ```
 
-Start at 0.82 and tune. Too low merges unrelated news; too high splits one
-event into five. Expect to adjust this twice in the first week. **This number
-cannot be validated on test data — it needs several days of real news.**
+**Measured, not guessed (2026-08-31).** The original 0.82 was wrong: it sits
+above every true positive. On real coverage, genuine same-event pairs land at
+0.767-0.802 — Sony/Warner sue Anthropic 0.802, Nvidia buys Hugging Face 0.791,
+the OpenAI/Hugging Face incident 0.774. At 0.82 nothing merges at all, which is
+exactly the runaway that burns the LLM quota in phase 3.
+
+**Research feeds are excluded from clustering** via `sources.clusterable`.
+Academic titles share so much vocabulary that unrelated arXiv papers sat at
+0.762 while genuinely identical news sat at 0.767 — no single threshold
+separates them while research shares the pool. Papers stay embedded and
+searchable; when one matters, the press coverage of it clusters on its own.
+
+Every comparison between 0.65 and 0.90 is logged to `cluster_debug` with both
+titles, so the boundary can be re-read off real news rather than argued about.
 
 ### Importance
 
@@ -153,8 +165,8 @@ it so a 60-outlet story doesn't dominate forever.
 
 Ship each phase before starting the next. Each is usable alone.
 
-- [ ] **0 · Ingest** — feeds → `articles` → dumb reverse-chron list. No AI.
-- [ ] **1 · Clustering** — embeddings → `stories`. Hardest part. Most time here.
+- [x] **0 · Ingest** — feeds → `articles`. Green in CI every 15 min.
+- [x] **1 · Clustering** — embeddings → `stories`. Threshold calibrated to 0.75.
 - [ ] **2 · Ranking** — apply the formula, Pulse sorted by score not time.
 - [ ] **3 · Enrichment** — ONE Gemini call per cluster returning one_liner +
       category + entities as a single JSON object. One call, not three.

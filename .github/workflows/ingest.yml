@@ -23,11 +23,40 @@ jobs:
           node-version: "22"
           cache: npm
 
+      # ~90MB. Without this it re-downloads every 15 minutes.
+      - name: Cache the embedding model
+        uses: actions/cache@v4
+        with:
+          path: .models
+          key: minilm-l6-v2-v1
+
       - run: npm ci
 
-      - run: npm run ingest
+      # Stages run in order but resume independently: each finds its work with
+      # a SQL predicate and marks done by writing a column, so a failure here
+      # just means a larger batch next cycle. always() keeps one bad feed from
+      # blocking embedding and clustering.
+      - name: "stage 1 - fetch"
+        run: npm run ingest
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          # Stop starting new sources after 7 min, comfortably inside the
-          # job timeout above. Deferred sources go first on the next run.
-          INGEST_DEADLINE_MS: "420000"
+          INGEST_DEADLINE_MS: "300000"
+
+      - name: "stage 2 - embed"
+        if: always()
+        run: npm run embed
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          EMBED_DEADLINE_MS: "240000"
+
+      - name: "stage 3 - cluster"
+        if: always()
+        run: npm run cluster
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: "pipeline status"
+        if: always()
+        run: npm run status
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
