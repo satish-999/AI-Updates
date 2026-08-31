@@ -15,3 +15,6 @@ dist/
 .DS_Store
 
 .models/
+
+.next/
+next-env.d.ts
