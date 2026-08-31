@@ -61,6 +61,18 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
+      # Needs GEMINI_API_KEY in repo secrets. continue-on-error so a missing
+      # key or an exhausted free tier never fails the whole pipeline -- the
+      # stories simply stay unenriched and the next cycle retries them.
+      - name: "stage 5 - enrich"
+        if: always()
+        continue-on-error: true
+        run: npm run enrich
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
+
       - name: "pipeline status"
         if: always()
         run: npm run status

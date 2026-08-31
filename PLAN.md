@@ -167,9 +167,9 @@ Ship each phase before starting the next. Each is usable alone.
 
 - [x] **0 · Ingest** — feeds → `articles`. Green in CI every 15 min.
 - [x] **1 · Clustering** — embeddings → `stories`. Threshold calibrated to 0.75.
-- [ ] **2 · Ranking** — apply the formula, Pulse sorted by score not time.
-- [ ] **3 · Enrichment** — ONE Gemini call per cluster returning one_liner +
-      category + entities as a single JSON object. One call, not three.
+- [x] **2 · Ranking** — formula applied; stories carry `importance`.
+- [x] **3 · Enrichment** — one Gemini call per story returning one_liner +
+      category + entities as a single JSON object. Model: gemini-3.5-flash-lite.
 - [ ] **4 · Search + agent** — hybrid retrieval (tsvector + vector), then
       scoped agent, then archive agent.
 - [ ] **5 · The rest** — threads, entity pages, Model Board, push, saved
