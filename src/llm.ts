@@ -28,8 +28,12 @@ const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
  * merging would produce hundreds of single-article stories, each looking novel
  * and important, and would drain the day's quota overnight. The fuse turns
  * that incident into a log line.
+ *
+ * Raised from 60 once the app was shared with a team: enrichment uses ~15 a
+ * day, and every question someone asks costs one more. The cap still has to
+ * sit under the provider's own free-tier limit to be worth anything.
  */
-const DAILY_CAP = Number(process.env.LLM_DAILY_CAP ?? 60);
+const DAILY_CAP = Number(process.env.LLM_DAILY_CAP ?? 200);
 
 /**
  * gemini-3.5-flash-lite measured at ~950ms against 13s for flash and 124s for

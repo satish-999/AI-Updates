@@ -138,11 +138,11 @@ export async function getThreadStories(
   `) as PulseStory[];
 }
 
-export async function markRead(storyId: number): Promise<void> {
+export async function markRead(viewerId: string, storyId: number): Promise<void> {
   const sql = db();
   await sql`
-    insert into read_state (story_id) values (${storyId})
-    on conflict (story_id) do update set read_at = now()
+    insert into read_state (viewer_id, story_id) values (${viewerId}, ${storyId})
+    on conflict (viewer_id, story_id) do update set read_at = now()
   `;
 }
 
@@ -150,7 +150,7 @@ export async function markRead(storyId: number): Promise<void> {
  * Catch-up: what mattered that you have not seen. Ranked by importance so a
  * week away returns the six things that counted, not four hundred unread items.
  */
-export async function getCatchup(limit = 10): Promise<PulseStory[]> {
+export async function getCatchup(viewerId: string, limit = 10): Promise<PulseStory[]> {
   const sql = db();
   return (await sql`
     select st.id, st.one_liner, st.category, st.importance, st.article_count,
@@ -162,7 +162,7 @@ export async function getCatchup(limit = 10): Promise<PulseStory[]> {
             join sources s on s.id = a.source_id
             where sa.story_id = st.id) as sources
     from stories st
-    left join read_state r on r.story_id = st.id
+    left join read_state r on r.story_id = st.id and r.viewer_id = ${viewerId}
     where st.importance is not null and r.story_id is null
     order by st.importance desc, st.last_seen_at desc
     limit ${limit}

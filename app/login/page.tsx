@@ -17,7 +17,7 @@ export default async function Login({
   return (
     <div className="login">
       <h1>AI Pulse</h1>
-      <p>Private. One user.</p>
+      <p>Private. Shared team access.</p>
       <form method="POST" action="/api/login">
         <input
           type="password"

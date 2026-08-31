@@ -1,5 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { COOKIE, createToken, cookieOptions } from "@/lib/auth";
+import {
+  COOKIE,
+  VIEWER_COOKIE,
+  createToken,
+  cookieOptions,
+  newViewerId,
+  viewerCookieOptions,
+} from "@/lib/auth";
 
 /** Constant-time compare so the password cannot be probed character by character. */
 function safeEqual(a: string, b: string): boolean {
@@ -27,5 +34,10 @@ export async function POST(req: NextRequest) {
 
   const res = NextResponse.redirect(new URL("/", req.url), 303);
   res.cookies.set(COOKIE, await createToken(secret), cookieOptions);
+
+  // Keep an existing viewer id so read history survives signing out and back in.
+  if (!req.cookies.get(VIEWER_COOKIE)?.value) {
+    res.cookies.set(VIEWER_COOKIE, newViewerId(), viewerCookieOptions);
+  }
   return res;
 }

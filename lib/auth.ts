@@ -14,6 +14,9 @@
  */
 
 export const COOKIE = "pulse_session";
+/** Anonymous per-browser id. Not an account — it only separates read state so
+ *  Catch-up means something when several people share the one password. */
+export const VIEWER_COOKIE = "pulse_viewer";
 const MAX_AGE_DAYS = 30;
 
 function b64url(bytes: ArrayBuffer | Uint8Array): string {
@@ -69,4 +72,16 @@ export const cookieOptions = {
   secure: process.env.NODE_ENV === "production",
   path: "/",
   maxAge: MAX_AGE_DAYS * 86_400,
+};
+
+export function newViewerId(): string {
+  return crypto.randomUUID();
+}
+
+export const viewerCookieOptions = {
+  httpOnly: true,
+  sameSite: "lax" as const,
+  secure: process.env.NODE_ENV === "production",
+  path: "/",
+  maxAge: 365 * 86_400,
 };
