@@ -4,14 +4,25 @@
  * The worker writes every derived value; the app only reads. Nothing in a
  * request path decides whether a story needs re-clustering, which is what
  * keeps page loads fast and removes a whole class of concurrency bug.
+ *
+ * The client is created lazily on first query, never at module scope. A
+ * module-scope throw runs while Next is collecting page data during the build,
+ * which made a missing DATABASE_URL fail the deploy rather than fail a request
+ * — builds must not depend on a live database.
  */
 
-import { neon } from "@neondatabase/serverless";
+import { neon, type NeonQueryFunction } from "@neondatabase/serverless";
 
-const url = process.env.DATABASE_URL;
-if (!url) throw new Error("DATABASE_URL is not set");
+let client: NeonQueryFunction<false, false> | null = null;
 
-export const sql = neon(url);
+function db(): NeonQueryFunction<false, false> {
+  if (!client) {
+    const url = process.env.DATABASE_URL;
+    if (!url) throw new Error("DATABASE_URL is not set");
+    client = neon(url);
+  }
+  return client;
+}
 
 export type PulseStory = {
   id: number;
@@ -26,6 +37,7 @@ export type PulseStory = {
 
 /** Top of the Pulse: ranked by importance, never by time. */
 export async function getPulse(limit = 12): Promise<PulseStory[]> {
+  const sql = db();
   return (await sql`
     select st.id, st.one_liner, st.category, st.importance, st.article_count,
            st.first_seen_at,
@@ -49,6 +61,7 @@ export type StoryDetail = PulseStory & {
 };
 
 export async function getStory(id: number): Promise<StoryDetail | null> {
+  const sql = db();
   const rows = (await sql`
     select st.id, st.one_liner, st.category, st.importance, st.article_count,
            st.first_seen_at, st.last_seen_at, st.thread_id,
@@ -78,6 +91,7 @@ export type StoryArticle = {
 
 /** Every source behind one story — the forty-to-one link, expanded. */
 export async function getStoryArticles(id: number): Promise<StoryArticle[]> {
+  const sql = db();
   return (await sql`
     select a.id, a.title, a.url, a.summary, a.published_at,
            s.name as source_name, s.weight
@@ -92,6 +106,7 @@ export async function getStoryArticles(id: number): Promise<StoryArticle[]> {
 export type Entity = { id: number; name: string; slug: string; kind: string };
 
 export async function getStoryEntities(id: number): Promise<Entity[]> {
+  const sql = db();
   return (await sql`
     select e.id, e.name, e.slug, e.kind
     from story_entities se join entities e on e.id = se.entity_id
@@ -105,6 +120,7 @@ export async function getThreadStories(
   threadId: number,
   excludeStoryId: number
 ): Promise<PulseStory[]> {
+  const sql = db();
   return (await sql`
     select st.id, st.one_liner, st.category, st.importance, st.article_count,
            st.first_seen_at,
@@ -126,6 +142,7 @@ export type PipelineStats = {
 };
 
 export async function getStats(): Promise<PipelineStats> {
+  const sql = db();
   const [row] = (await sql`
     select (select count(*)::int from articles) as articles,
            (select count(*)::int from stories) as stories,

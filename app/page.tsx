@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { getPulse, getStats } from "@/lib/db";
 
-// Neon suspends when idle, so the first visitor after a quiet stretch pays a
-// wake of about a second and everyone after that is served from cache. Fair
-// trade for a database that costs nothing to leave running.
-export const revalidate = 60;
+// Rendered per request, not prerendered at build. ISR would have Next query
+// the database while collecting page data, which couples a deploy to a live
+// Neon instance — a sleeping database or an unset build-time variable would
+// fail the build rather than one request. At single-user traffic the saved
+// round trip was never worth that.
+export const dynamic = "force-dynamic";
 
 function ago(iso: string): string {
   const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);

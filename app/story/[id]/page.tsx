@@ -7,7 +7,9 @@ import {
   getThreadStories,
 } from "@/lib/db";
 
-export const revalidate = 60;
+// Per request, for the same reason as the Pulse: builds must not need a
+// live database.
+export const dynamic = "force-dynamic";
 
 function day(iso: string | null): string {
   if (!iso) return "undated";
