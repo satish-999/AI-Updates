@@ -73,6 +73,15 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
 
+      # Canonicalises entities and refreshes story search text. Cheap, and it
+      # keeps entity pages from splitting one thing across several names.
+      - name: "stage 6 - tidy"
+        if: always()
+        continue-on-error: true
+        run: npm run tidy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
       - name: "pipeline status"
         if: always()
         run: npm run status
