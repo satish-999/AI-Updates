@@ -9,7 +9,8 @@
     "probe": "tsx src/probe.ts",
     "migrate": "tsx src/migrate.ts",
     "embed": "tsx src/embed.ts",
-    "cluster": "tsx src/cluster.ts"
+    "cluster": "tsx src/cluster.ts",
+    "score": "tsx src/score.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
