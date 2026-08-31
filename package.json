@@ -14,7 +14,8 @@
     "enrich": "tsx src/enrich.ts",
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "tidy": "tsx src/tidy.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",

@@ -1,5 +1,7 @@
 import Link from "next/link";
+import { Nav } from "./nav";
 import { getPulse, getStats } from "@/lib/db";
+import { ago } from "@/lib/format";
 
 // Rendered per request, not prerendered at build. ISR would have Next query
 // the database while collecting page data, which couples a deploy to a live
@@ -7,14 +9,6 @@ import { getPulse, getStats } from "@/lib/db";
 // fail the build rather than one request. At single-user traffic the saved
 // round trip was never worth that.
 export const dynamic = "force-dynamic";
-
-function ago(iso: string): string {
-  const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-  if (mins < 60) return `${Math.max(mins, 1)}m ago`;
-  const hours = Math.floor(mins / 60);
-  if (hours < 24) return `${hours}h ago`;
-  return `${Math.floor(hours / 24)}d ago`;
-}
 
 export default async function Pulse() {
   const [stories, stats] = await Promise.all([getPulse(12), getStats()]);
@@ -28,9 +22,16 @@ export default async function Pulse() {
           {stats.latest ? ` · updated ${ago(stats.latest)}` : ""}
         </span>
       </header>
+      <Nav />
 
       {stories.length === 0 ? (
-        <p className="empty">Nothing ranked yet. Run the pipeline to populate the Pulse.</p>
+        <div className="state">
+          <h2>Nothing ranked yet</h2>
+          <p>
+            The pipeline collects every 15 minutes. Stories appear here once
+            articles have been clustered and scored.
+          </p>
+        </div>
       ) : (
         <ol className="pulse">
           {stories.map((s, i) => (

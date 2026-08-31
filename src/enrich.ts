@@ -22,6 +22,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { neon } from "@neondatabase/serverless";
 import { generate, parseJson, QuotaExhausted } from "./llm.js";
+import { canonicalise, aliasesFor, slugify } from "./canonical.js";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 dotenv.config({ path: path.join(root, ".env") });
@@ -50,14 +51,6 @@ type Enrichment = {
   entities: { name: string; kind: string }[];
   thread_hint?: string;
 };
-
-function slugify(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 60);
-}
 
 function buildPrompt(titles: string[], summaries: string[]): string {
   const sources = titles
@@ -90,15 +83,21 @@ async function upsertEntities(
   entities: { name: string; kind: string }[]
 ): Promise<void> {
   for (const e of entities.slice(0, 5)) {
-    const name = String(e.name ?? "").trim();
-    if (!name) continue;
-    const kind = ["company", "person", "model"].includes(e.kind) ? e.kind : "company";
-    const slug = slugify(name);
+    // Canonicalise before storing. Raw model output gives one thing many
+    // names, and entity pages key on identity.
+    const canon = canonicalise(String(e.name ?? ""), String(e.kind ?? ""));
+    if (!canon) continue;
+
+    const slug = slugify(canon.name);
     if (!slug) continue;
 
     const [row] = (await sql`
-      insert into entities (name, slug, kind) values (${name}, ${slug}, ${kind})
-      on conflict (slug) do update set name = excluded.name
+      insert into entities (name, slug, kind, aliases)
+      values (${canon.name}, ${slug}, ${canon.kind}, ${aliasesFor(canon)}::text[])
+      on conflict (slug) do update set
+        name = excluded.name,
+        kind = excluded.kind,
+        aliases = excluded.aliases
       returning id
     `) as { id: number }[];
 
@@ -117,7 +116,11 @@ async function attachThread(
   hint: string | undefined,
   entities: { name: string; kind: string }[]
 ): Promise<void> {
-  const primary = entities.find((e) => e.kind === "company") ?? entities[0];
+  const canon = entities
+    .map((e) => canonicalise(String(e.name ?? ""), String(e.kind ?? "")))
+    .filter((c): c is NonNullable<typeof c> => c !== null);
+
+  const primary = canon.find((e) => e.kind === "company") ?? canon[0];
   if (!primary?.name) return;
 
   const [ent] = (await sql`
