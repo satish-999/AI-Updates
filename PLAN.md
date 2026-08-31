@@ -170,12 +170,12 @@ Ship each phase before starting the next. Each is usable alone.
 - [x] **2 · Ranking** — formula applied; stories carry `importance`.
 - [x] **3 · Enrichment** — one Gemini call per story returning one_liner +
       category + entities as a single JSON object. Model: gemini-3.5-flash-lite.
-- [ ] **4 · Search + agent** — hybrid retrieval (tsvector + vector), then
-      scoped agent, then archive agent.
-- [ ] **5 · The rest** — threads, entity pages, Model Board, push, saved
-      questions.
+- [x] **4 · Search + agent** — RRF over two full-text rankers, then scoped
+      agent, then archive agent. Citations enforced after generation.
+- [x] **5 · The rest** — threads, entity pages, Model Board, Catch-up.
+      Push and saved questions remain: both need keys/config, not code.
 
-Usable daily tool after phase 3.
+Usable daily tool after phase 3. Shipped through phase 5 and deployed.
 
 ## Deliberately out of scope for v1
 

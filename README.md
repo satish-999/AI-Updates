@@ -6,7 +6,7 @@ what actually matters, searchable down to minor details.
 **Read `PLAN.md` before doing anything.** It holds the architecture, formulas
 and decisions. In Claude Code, start each session by asking it to read PLAN.md.
 
-Currently at: **Phase 0 — ingest works. The app is not built yet.**
+Live at **ai-updates-git-main-satish-999.vercel.app**. Phases 0-5 shipped.
 
 ## Commands
 
