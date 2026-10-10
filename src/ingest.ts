@@ -234,7 +234,26 @@ async function main() {
   );
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+/**
+ * Exit explicitly once the work is done.
+ *
+ * Without this the process finished its fetches in ~45s and then sat open
+ * until the workflow's 12-minute timeout killed it, so every run was marked
+ * cancelled and stages 2-6 only survived on `if: always()`, squeezed into the
+ * last seconds before the job died. rss-parser leaves keep-alive sockets
+ * behind -- the 429 retries are the usual culprit -- and those keep the event
+ * loop alive even though nothing is left to do. The other stages make no HTTP
+ * requests of their own, which is why only this one hangs.
+ *
+ * The empty write drains stdout first: process.exit() truncates pending
+ * writes to a pipe, which is exactly what CI gives us, and the run summary is
+ * the last line printed.
+ */
+main()
+  .then(() => {
+    process.stdout.write("", () => process.exit(0));
+  })
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
