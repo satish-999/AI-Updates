@@ -11,15 +11,7 @@
  *   generate(prompt, opts?) => Promise<string>
  */
 
-import dotenv from "dotenv";
-import path from "path";
-import { fileURLToPath } from "url";
 import { neon } from "@neondatabase/serverless";
-
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-dotenv.config({ path: path.join(root, ".env") });
-
-const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
 
 /**
  * Hard ceiling on calls per UTC day.
@@ -33,15 +25,12 @@ const sql = process.env.DATABASE_URL ? neon(process.env.DATABASE_URL) : null;
  * day, and every question someone asks costs one more. The cap still has to
  * sit under the provider's own free-tier limit to be worth anything.
  */
-const DAILY_CAP = Number(process.env.LLM_DAILY_CAP ?? 200);
 
 /**
  * gemini-3.5-flash-lite measured at ~950ms against 13s for flash and 124s for
  * gemini-3.6-flash. Enrichment is extraction, not reasoning, so the lite model
  * is the right trade — and the speed keeps stage 5 inside the CI job timeout.
  */
-const GEMINI_MODEL = process.env.GEMINI_MODEL ?? "gemini-3.5-flash-lite";
-const GROQ_MODEL = process.env.GROQ_MODEL ?? "llama-3.3-70b-versatile";
 
 export type GenerateOptions = {
   /** Ask the provider for a JSON object rather than prose. */
@@ -66,20 +55,24 @@ function isTransient(status: number): boolean {
 
 /** Counts a call against today's budget and returns false when the fuse blows. */
 async function reserve(provider: string): Promise<boolean> {
-  if (!sql) return true;
+  const url = process.env.DATABASE_URL;
+  if (!url) throw new Error("DATABASE_URL is required for the quota fuse");
+  const sql = neon(url);
+  const cap = Number(process.env.LLM_DAILY_CAP ?? 200);
+  if (!Number.isSafeInteger(cap) || cap < 1) throw new Error("Invalid LLM_DAILY_CAP");
   const [row] = (await sql`
     insert into llm_calls (day, provider, calls)
-    values (current_date, ${provider}, 1)
+    values ((now() at time zone 'UTC')::date, ${provider}, 1)
     on conflict (day, provider) do update set calls = llm_calls.calls + 1
     returning calls
   `) as { calls: number }[];
 
   const [{ total }] = (await sql`
-    select coalesce(sum(calls), 0)::int as total from llm_calls where day = current_date
+    select coalesce(sum(calls), 0)::int as total from llm_calls where day = (now() at time zone 'UTC')::date
   `) as { total: number }[];
 
-  if (total > DAILY_CAP) {
-    throw new QuotaExhausted(total, DAILY_CAP);
+  if (total > cap) {
+    throw new QuotaExhausted(total, cap);
   }
   return row.calls > 0;
 }
@@ -88,11 +81,12 @@ async function callGemini(prompt: string, opts: GenerateOptions): Promise<string
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error("GEMINI_API_KEY is not set");
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${process.env.GEMINI_MODEL ?? "gemini-3.5-flash-lite"}:generateContent`;
 
   // Key travels as a header, not a query parameter, so it never lands in a
   // URL that could be logged by a proxy or captured in an error trace.
   const res = await fetch(url, {
+    signal: AbortSignal.timeout(10_000),
     method: "POST",
     headers: { "x-goog-api-key": key, "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -125,10 +119,11 @@ async function callGroq(prompt: string, opts: GenerateOptions): Promise<string> 
   if (!key) throw new Error("GROQ_API_KEY is not set");
 
   const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    signal: AbortSignal.timeout(10_000),
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
     body: JSON.stringify({
-      model: GROQ_MODEL,
+      model: process.env.GROQ_MODEL ?? "llama-3.3-70b-versatile",
       temperature: 0,
       messages: [{ role: "user", content: prompt }],
       ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),

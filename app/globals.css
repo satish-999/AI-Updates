@@ -449,6 +449,19 @@ table.board td:first-child { color: var(--ink); font-weight: 500; }
 @keyframes shimmer { to { background-position: -200% 0; } }
 @media (prefers-reduced-motion: reduce) { .skel { animation: none; } }
 
+.monitor-intro { padding: 36px 0 24px; max-width: 680px; }
+.monitor-intro h1 { font-size: clamp(26px, 5vw, 40px); line-height: 1.15; margin: 12px 0; }
+.monitor-create { padding: 20px; border: 1px solid var(--rule); background: var(--surface); }
+.monitor-create label { display: block; margin-bottom: 10px; font-weight: 600; }
+.monitor-create > div { display: flex; gap: 12px; }
+.monitor-create input { flex: 1; min-width: 0; padding: 12px; background: transparent; color: inherit; border: 1px solid var(--rule); font: inherit; }
+.monitor-create button, .monitor-row button { cursor: pointer; padding: 10px 14px; background: var(--surface); color: var(--link); border: 1px solid var(--rule); font: inherit; }
+.monitor-row { display: flex; justify-content: space-between; gap: 16px; padding: 20px 0; border-bottom: 1px solid var(--rule); overflow-wrap: anywhere; }
+.monitor-row h3 { margin: 4px 0 10px; font-size: 17px; }
+.monitor-row form { display: flex; align-items: center; gap: 8px; }
+.monitor-results { margin: 36px 0; }
+@media (max-width: 600px) { .monitor-row, .monitor-create > div { flex-direction: column; } .tabs { overflow-x: auto; } }
+
 .readmark {
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
   font-size: 10px;

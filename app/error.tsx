@@ -9,10 +9,9 @@ export default function Error({ reset }: { error: Error; reset: () => void }) {
   return (
     <div className="wrap">
       <div className="state">
-        <h2>Something broke loading this page</h2>
+        <h2>This page is temporarily unavailable</h2>
         <p>
-          Usually the database is unreachable or an environment variable is
-          missing. The pipeline keeps collecting either way — nothing is lost.
+          We could not load the requested information. Please try again shortly.
         </p>
         <button onClick={reset}>Try again</button>
       </div>

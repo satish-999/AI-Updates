@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Nav } from "../nav";
 import { getModelBoard } from "@/lib/db";
+import { safeArticleUrl } from "@/lib/feed-policy";
 import { ymd } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -12,7 +13,9 @@ function ctx(n: number | null): string {
 
 /** Frontier models side by side. Rows are added by enrichment on launch stories. */
 export default async function Models() {
-  const rows = await getModelBoard();
+  let rows: Awaited<ReturnType<typeof getModelBoard>> = [];
+  let unavailable = false;
+  try { rows = await getModelBoard(); } catch { unavailable = true; }
 
   return (
     <div className="wrap">
@@ -20,11 +23,11 @@ export default async function Models() {
         <Link href="/" className="brand">AI Pulse</Link>
         <span className="meta">{rows.length} models</span>
       </header>
-      <Nav />
+      <Nav /><h1>Model release tracker</h1><p className="hint">Models mentioned in enriched launch stories. Observed dates record coverage; they are not release dates. This is not a benchmark leaderboard. Open the sources to evaluate each claim.</p>
 
       {rows.length === 0 ? (
         <div className="state">
-          <h2>No models recorded yet</h2>
+          <h2>{unavailable ? "Model data is unavailable" : "No models recorded yet"}</h2>
           <p>
             Rows are added automatically when a launch story is enriched. Until a
             model release lands in the Pulse, this stays empty.
@@ -38,7 +41,7 @@ export default async function Models() {
               <tr>
                 <th>Model</th>
                 <th>Vendor</th>
-                <th>Released</th>
+                <th>Observed</th><th>Release date</th>
                 <th>Context</th>
                 <th>Notes</th>
               </tr>
@@ -54,9 +57,9 @@ export default async function Models() {
                     )}
                   </td>
                   <td>{m.vendor ?? "—"}</td>
-                  <td>{ymd(m.released_at)}</td>
+                  <td>{ymd(m.observed_at)}</td><td>{ymd(m.released_at)}</td>
                   <td>{ctx(m.context)}</td>
-                  <td>{m.notes ?? "—"}</td>
+                  <td>{m.notes ?? "—"}{safeArticleUrl(m.source_url) && <p><a href={m.source_url!} target="_blank" rel="noopener noreferrer">Original article ↗</a></p>}</td>
                 </tr>
               ))}
             </tbody>

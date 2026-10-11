@@ -199,6 +199,8 @@ export async function getEntityPage(slug: string): Promise<EntityPage> {
 }
 
 export type ModelRow = {
+  observed_at: Timestamp;
+  source_url: string | null;
   id: number;
   name: string;
   slug: string;
@@ -213,8 +215,8 @@ export type ModelRow = {
 export async function getModelBoard(): Promise<ModelRow[]> {
   const sql = db();
   return (await sql`
-    select id, name, slug, vendor, released_at, context, benchmarks, notes, story_id
-    from models order by released_at desc nulls last, name
+    select id, name, slug, vendor, released_at, context, benchmarks, notes, story_id, observed_at, source_url
+    from models order by observed_at desc nulls last, released_at desc nulls last, name
   `) as ModelRow[];
 }
 

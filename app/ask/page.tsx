@@ -1,47 +1,12 @@
 import Link from "next/link";
 import { Nav } from "../nav";
-import { askArchive } from "@/lib/agent";
+import { ArchiveAnswer } from "./answer";
+import { requireIdentity } from "@/lib/identity";
 import { searchStories } from "@/lib/search";
-import type { Passage } from "@/lib/search";
-import { mmdd, ymd } from "@/lib/format";
+
+import { mmdd } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
-
-/** Turn [n] markers into links down to the numbered source list. */
-function withCitations(text: string) {
-  const parts = text.split(/(\[\d+\])/g);
-  return parts.map((part, i) => {
-    const m = part.match(/^\[(\d+)\]$/);
-    if (!m) return <span key={i}>{part}</span>;
-    return (
-      <sup key={i}>
-        <a href={`#src-${m[1]}`}>[{m[1]}]</a>
-      </sup>
-    );
-  });
-}
-
-function Sources({ passages }: { passages: Passage[] }) {
-  if (passages.length === 0) return null;
-  return (
-    <>
-      <h2 className="sec">Sources</h2>
-      <ul className="sources">
-        {passages.map((p) => (
-          <li key={p.n} id={`src-${p.n}`}>
-            <div className="src-name">
-              [{p.n}] {p.source_name}
-              {p.published_at ? ` · ${ymd(p.published_at)}` : ""}
-            </div>
-            <a className="src-title" href={p.url} target="_blank" rel="noopener noreferrer">
-              {p.title}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </>
-  );
-}
 
 export default async function Ask({
   searchParams,
@@ -49,10 +14,10 @@ export default async function Ask({
   searchParams: Promise<{ q?: string }>;
 }) {
   const { q } = await searchParams;
-  const question = (q ?? "").trim();
+  const question = (q ?? "").trim().slice(0, 1200);
+  const user = await requireIdentity();
 
-  const answer = question ? await askArchive(question) : null;
-  const related = question ? await searchStories(question, 8) : [];
+  const related = question && !user.preview ? await searchStories(question, 8) : [];
 
   return (
     <div className="wrap">
@@ -75,21 +40,13 @@ export default async function Ask({
       {!question && (
         <p className="hint">
           Answers come from stored articles only, never the live web — retrieval is
-          sub-second where browsing would take twenty. Every sentence carries a
+          indexed from collected sources. Every grounded answer carries a
           citation, and &ldquo;not in the archive&rdquo; is a real answer rather than a
           failure.
         </p>
       )}
 
-      {answer?.grounded && (
-        <div className="answer">{withCitations(answer.text)}</div>
-      )}
-
-      {answer && !answer.grounded && answer.note && (
-        <div className="note">{answer.note}</div>
-      )}
-
-      {answer && <Sources passages={answer.passages} />}
+      {question && <ArchiveAnswer key={question} question={question} />}
 
       {related.length > 0 && (
         <>
@@ -118,7 +75,7 @@ export default async function Ask({
         </>
       )}
 
-      {question && !answer?.grounded && related.length === 0 && (
+      {question && related.length === 0 && (
         <div className="state">
           <h2>Nothing found</h2>
           <p>No article in the archive mentions that. Try different words.</p>

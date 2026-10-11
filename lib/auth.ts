@@ -1,17 +1,4 @@
-/**
- * Single-user auth.
- *
- * One user means no roles, no registration and no identity provider. A
- * password check sets a signed cookie; middleware gates everything else.
- * NextAuth would add a dependency and a provider round trip to solve a problem
- * that does not exist here.
- *
- * What does exist: the app sits on a guessable public URL, and an ungated
- * /api/ask is a free LLM endpoint for anyone who finds it. The gate protects
- * the quota, not just the content.
- *
- * Uses Web Crypto so the same code runs in Edge middleware and in Node.
- */
+/** Legacy loopback-preview cookies only. Production identity uses Supabase. */
 
 export const COOKIE = "pulse_session";
 /** Anonymous per-browser id. Not an account — it only separates read state so
@@ -66,22 +53,22 @@ export async function verifyToken(token: string | undefined, secret: string): Pr
   return Number.isFinite(expires) && expires > Date.now();
 }
 
-export const cookieOptions = {
+export const cookieOptions = () => ({
   httpOnly: true,
   sameSite: "lax" as const,
   secure: process.env.NODE_ENV === "production",
   path: "/",
   maxAge: MAX_AGE_DAYS * 86_400,
-};
+});
 
 export function newViewerId(): string {
   return crypto.randomUUID();
 }
 
-export const viewerCookieOptions = {
+export const viewerCookieOptions = () => ({
   httpOnly: true,
   sameSite: "lax" as const,
   secure: process.env.NODE_ENV === "production",
   path: "/",
   maxAge: 365 * 86_400,
-};
+});

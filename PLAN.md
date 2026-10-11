@@ -1,4 +1,17 @@
+> Latest local delivery (2026-10-11): individual Supabase accounts, account-owned
+> projects/monitors, Razorpay subscription infrastructure, model observations and
+> 26 tests are implemented. Follow DEPLOYMENT.md; cloud services are not configured.
+> Older pilot/deployed-state descriptions below are historical, not current status.
+
+> 2026-10-11 local implementation: Updates, News and Find the Right AI are built.
+> See IMPLEMENTATION-NOTES.md for validation, setup and remaining launch work.
+> Historical deployed-state claims below are not a report of this local build.
+
 # AI Pulse — Project Plan
+
+> 2026-10-10 owner update: subscriptions first, business-opportunity discovery
+> second. See `COMMERCIAL-ROADMAP.md` for the staged implementation and commercial
+> prerequisites. The personal-use constraints below describe the original v1.
 
 > Read this file first in every Claude Code session. It is the source of truth
 > for architecture and decisions. Update it when a decision changes.

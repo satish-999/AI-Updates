@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { sameRequestOrigin } from "@/lib/request-origin";
 import {
   COOKIE,
   VIEWER_COOKIE,
@@ -17,6 +18,8 @@ function safeEqual(a: string, b: string): boolean {
 }
 
 export async function POST(req: NextRequest) {
+  if (process.env.AUTH_MODE !== "preview") return NextResponse.json({ error: "Use account sign-in." }, { status: 404 });
+  if (!sameRequestOrigin(req.headers.get("origin"), req.headers.get("host"))) return NextResponse.json({ error: "Invalid origin." }, { status: 403 });
   const form = await req.formData();
   const password = String(form.get("password") ?? "");
 
@@ -33,11 +36,11 @@ export async function POST(req: NextRequest) {
   }
 
   const res = NextResponse.redirect(new URL("/", req.url), 303);
-  res.cookies.set(COOKIE, await createToken(secret), cookieOptions);
+  res.cookies.set(COOKIE, await createToken(secret), cookieOptions());
 
   // Keep an existing viewer id so read history survives signing out and back in.
   if (!req.cookies.get(VIEWER_COOKIE)?.value) {
-    res.cookies.set(VIEWER_COOKIE, newViewerId(), viewerCookieOptions);
+    res.cookies.set(VIEWER_COOKIE, newViewerId(), viewerCookieOptions());
   }
   return res;
 }

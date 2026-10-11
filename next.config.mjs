@@ -1,5 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // This small app can build in-process. Threads avoid child-process spawn
+  // restrictions in local Windows environments; keep build memory bounded.
+  experimental: { webpackBuildWorker: false, workerThreads: true, useTypeScriptCli: false, cpus: 2 },
   // The worker pulls in onnxruntime and sharp for local embeddings. Nothing in
   // the app imports them, and this keeps the tracer from walking into them.
   outputFileTracingExcludes: {
