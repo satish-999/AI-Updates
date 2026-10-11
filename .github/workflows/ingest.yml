@@ -82,6 +82,18 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
+      - name: "stage 7 - monitors"
+        if: always()
+        run: npm run monitor
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: "stage 8 - model observations"
+        if: always()
+        run: npm run models:sync
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
       - name: "pipeline status"
         if: always()
         run: npm run status

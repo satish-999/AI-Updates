@@ -1,4 +1,18 @@
+> Latest local delivery (2026-10-11): individual Supabase accounts, account-owned
+> projects/monitors, Razorpay subscription infrastructure, model observations and
+> 26 tests are implemented. Follow DEPLOYMENT.md; cloud services are not configured.
+> Older pilot/deployed-state descriptions below are historical, not current status.
+
+> 2026-10-11 local implementation: Updates, News and Find the Right AI are built.
+> See IMPLEMENTATION-NOTES.md for validation, setup and remaining launch work.
+> Historical deployed-state claims below are not a report of this local build.
+
 # AI Pulse — handover
+
+> Continuation: a browser-scoped monitor pilot, stage 7, migration 007 and
+> database/input checks are now implemented locally. See `COMMERCIAL-ROADMAP.md`.
+> Deployment, real customer identity and billing are still pending. Operational
+> counts and deployed-state statements below are the historical handover snapshot.
 
 Everything a new developer or agent needs to continue this project. Written to
 be read **before** touching code, alongside `PLAN.md` (architecture decisions) and

@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./product.css";
 
 export const metadata: Metadata = {
   title: "AI Pulse",
-  description: "Worldwide AI news, ranked by what matters.",
+  description: "AI updates, original-source news, and evidence-backed tools for your next project.",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "AI Pulse", statusBarStyle: "default" },
 };

@@ -1,86 +1,97 @@
 # AI Pulse
 
-Personal AI news aggregator. One tool for worldwide AI updates — ranked by
-what actually matters, searchable down to minor details.
+AI Updates, AI News and a source-backed creative AI advisor, with individual
+accounts and subscription infrastructure. Headlines open original publisher
+articles; story pages group related coverage. The atom is a story, not an article.
 
-**Read `PLAN.md` before doing anything.** It holds the architecture, formulas
-and decisions. In Claude Code, start each session by asking it to read PLAN.md.
+## Product
 
-Live at **ai-updates-git-main-satish-999.vercel.app**. Phases 0-5 shipped.
-
-## Commands
-
-```bash
-npm run ingest    # stage 1 — fetch every active feed, upsert articles
-npm run status    # what's in the database, what's backlogged, what's failing
-npm run probe     # test feed URLs before editing sources.ts
-```
-
-`npm run probe` with no arguments re-tests every feed in `sources.ts`; pass
-URLs to test candidates instead:
-
-```bash
-npm run probe -- https://example.com/rss.xml https://example.com/feed
-```
+- Updates: model/product releases, full-text search, latest/importance sorting.
+- News: research, business, funding, policy and other coverage.
+- Advisor: anime, video, voice, music, graphics and social workflows, filtered by
+  budget, device, experience and commercial-use requirements. Eight reviewed
+  catalog entries include official sources and plan limits. No media generation.
+- Workspace: account-saved projects, downloads, monitors, reading history, cited
+  archive answers, model observations and visible source coverage.
+- Accounts: email/password registration, confirmation, recovery, password change,
+  logout and optional Google OAuth through Supabase.
+- Subscriptions: Free/Pro limits, Razorpay hosted checkout, signed webhooks,
+  reconciliation, cancellation and expired-period resubscription.
 
 ## Setup
 
-### 1. Database
+See DEPLOYMENT.md for the complete Supabase, Neon, Razorpay, SMTP, migration and
+hosting setup. Copy .env.example to an ignored .env for local development. Never
+commit credentials. The app uses Supabase's publishable key; no service-role key.
 
-1. Sign up at [neon.tech](https://neon.tech), create a project.
-2. Open the **SQL Editor**, paste all of `db/001_phase0.sql`, run it.
-3. Copy the **pooled** connection string from the dashboard.
+    npm ci
+    npm run migrate
+    npm run dev
 
-### 2. Local
+Set APP_URL to your exact origin. AUTH_MODE defaults to Supabase. Preview mode is
+explicit and restricted to loopback; it is not customer identity.
+BILLING_ENABLED defaults to false. A plan price is read from Razorpay, never from
+a hard-coded amount. No live subscription has been created by local development.
 
-```bash
-npm install
-cp .env.example .env      # paste your Neon connection string into DATABASE_URL
-npm run ingest
-```
+## Verification
 
-### 3. Automate it
+    npm run typecheck
+    npm test
+    npm run build
+    npm run test:integration
+    npm run test:embedding
+    npm run config:check
 
-1. Push to GitHub as a **public** repo. Public means unlimited free Actions
-   minutes, which is what pays for 15-minute polling.
-2. Repo **Settings → Secrets and variables → Actions → New repository secret**
-   - Name: `DATABASE_URL`
-   - Value: your Neon connection string
-3. **Actions** tab → `ingest` → **Run workflow** to test it immediately.
+Builds require no database or provider credentials. The Next build uses webpack,
+worker threads and the in-process TypeScript checker to work around Windows child
+process restrictions; typechecking is not skipped.
 
-From here the ingest runs every 15 minutes with your laptop closed.
+The integration test uses the production Next server, real server actions, a local
+PostgreSQL engine and synthetic auth/payment transports. It tests two-account
+isolation, sign-in, checkout, webhook validation/replay, Pro upgrade, cancellation,
+expiry and resubscription without external side effects.
+The embedding smoke downloads the original public quantized MiniLM model and
+checks dimensions/normalization and native dependency compatibility.
+On restricted Windows hosts the unit suite can also run with:
 
-## Phase 0 status
+    node --experimental-strip-types --experimental-test-isolation=none --test tests/*.test.ts tests/*.test.mjs
 
-- [x] `npm run ingest` inserts articles
-- [x] Fewer than 5 sources failing (1 of 23 locally, 3 of 23 in CI)
-- [x] Re-running inserts 0 duplicates — the `url` UNIQUE constraint works
-- [x] The GitHub Action runs green from CI — 361 articles on the first run
-- [ ] A plain reverse-chronological list page — not built
+## Architecture
 
-## Known source quirks
+Next.js/React app, Neon PostgreSQL/pgvector, scheduled GitHub worker, Supabase Auth,
+Razorpay subscription service. Application-derived story data is written by the
+worker; request reads do not trigger enrichment. Explicit user mutations write
+projects, monitor settings and read state. AI generation is explicit POST, never a
+page-load side effect. Account limits and provider quota reservations happen before
+model calls. All model calls remain in src/llm.ts.
 
-These are normal and not worth re-debugging:
+Worker stages: fetch → embed → cluster → score → enrich → tidy → monitors → model
+observations. Each stage resumes from stored state. Billing reconciliation runs
+separately. Only verified account identity determines ownership, not a viewer ID
+supplied by the browser.
 
-- **arXiv feeds are empty at weekends.** arXiv only announces new submissions
-  Monday to Friday. An empty feed there is correct, not broken.
-- **Three sources fail from CI but work locally.** GitHub runners use datacenter
-  IPs, which more services block: Import AI returns 403 (Substack), hnrss.org
-  times out, and r/MachineLearning 429s. All three are low-weight or duplicated
-  by other sources, so this is tolerated rather than fixed.
-- **Reddit 429s.** Its public `.rss` is aggressively rate limited, so usually
-  only one of the two subreddits succeeds per run. Sources are fetched
-  least-recently-succeeded first, so the two alternate rather than one
-  starving. Expect this to fail more often from GitHub's datacenter IPs.
-- **Anthropic has no RSS feed.** `anthropic.com/news` advertises no feed and
-  every conventional path 404s, so the source was removed. Their launches
-  still arrive through press coverage, just without the primary-source weight.
-  Fixing it properly needs a scraped source kind.
+## Limits and facts
 
-When something else breaks, `npm run status` shows the error and `npm run
-probe` tests replacements. Feeds move constantly — this is maintenance, not
-failure.
+Free: 3 projects, 3 monitors, 5 AI requests/day.
+Pro: 100 projects, 20 monitors, 50 AI requests/day.
+There is also a shared provider budget. Scheduled collection is not a real-time
+guarantee or exhaustive global coverage. Recommendations exclude catalog facts
+older than 30 days; editorial review is still necessary. Model observations do not
+claim universal rankings, verified benchmark scores or inferred release dates.
+Tool subscriptions and output rights remain separate from AI Pulse.
 
-## Never commit
+## Dependency compatibility
 
-`.env`. The repo is public. Keys go in GitHub Secrets and Vercel env vars.
+protobufjs is overridden to 7.6.6 and sharp to 0.35.5 to address inherited
+advisories while preserving the existing Transformers 2.17.2 and MiniLM weights.
+The local ONNX protobuf round-trip, sharp native encode/decode and actual embedding
+smoke passed. Keep these overrides until upstream dependency ranges catch up and
+repeat the compatibility smoke when changing them. npm audit reported zero known
+vulnerabilities at delivery; this is not a guarantee of security.
+
+## Deployment state
+
+The code and tests are implemented locally. Supabase project/SMTP, real payment
+activation, production secrets, migrations, hosting and provider end-to-end staging
+verification remain operator setup. Nothing has been pushed or deployed by this
+delivery. See IMPLEMENTATION-NOTES.md for exact validation and limitations.
