@@ -3,7 +3,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "AI Pulse",
-  description: "Worldwide AI news, ranked by what matters.",
+  description: "AI updates, worldwide news and source-backed creative tool guidance.",
   manifest: "/manifest.webmanifest",
   appleWebApp: { capable: true, title: "AI Pulse", statusBarStyle: "default" },
 };

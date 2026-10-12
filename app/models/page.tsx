@@ -10,7 +10,7 @@ function ctx(n: number | null): string {
   return n >= 1000 ? `${Math.round(n / 1000)}k` : String(n);
 }
 
-/** Frontier models side by side. Rows are added by enrichment on launch stories. */
+/** Model observations; automatic enrichment is not yet connected. */
 export default async function Models() {
   const rows = await getModelBoard();
 
@@ -26,8 +26,8 @@ export default async function Models() {
         <div className="state">
           <h2>No models recorded yet</h2>
           <p>
-            Rows are added automatically when a launch story is enriched. Until a
-            model release lands in the Pulse, this stays empty.
+            Automatic model extraction is not connected yet. Explore the creative
+            advisor for a small, source-backed tool and plan catalog.
           </p>
           <Link href="/">Back to the Pulse</Link>
         </div>

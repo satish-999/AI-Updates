@@ -189,13 +189,14 @@ async function main() {
 
       if (!oneLiner) throw new Error("empty one_liner");
 
+      // Mark completion only after all dependent writes succeed.
+      await upsertEntities(story.id, entities);
+      await attachThread(story.id, category, parsed.thread_hint, entities);
       await sql`
         update stories
         set one_liner = ${oneLiner}, category = ${category}, enriched_at = now()
         where id = ${story.id}
       `;
-      await upsertEntities(story.id, entities);
-      await attachThread(story.id, category, parsed.thread_hint, entities);
 
       ok++;
       console.log(

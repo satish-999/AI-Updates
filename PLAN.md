@@ -3,6 +3,20 @@
 > Read this file first in every Claude Code session. It is the source of truth
 > for architecture and decisions. Update it when a decision changes.
 
+## Current product direction (2026-10-12)
+
+The owner has expanded the goal to a subscription product with three primary
+surfaces: AI Updates, AI News and Find the Right AI. The local foundation is
+documented in `IMPLEMENTATION-NOTES.md`; that record supersedes the older UI
+and single-user product scope below. Preserve the existing pipeline, Story
+identity, cost discipline and fail-closed authentication. Accounts and billing
+are still future work; the current shared password is not customer identity.
+
+The creative advisor initially uses an explicitly reviewed catalog and no model
+calls. News collection is scheduled, not guaranteed real-time. Do not turn
+unverified prices or licensing into recommendations. Keep the importance-ranked
+Pulse accessible separately from the newest-first feeds.
+
 ## The problem
 
 I follow AI news worldwide — new model capabilities and comparisons, executive
