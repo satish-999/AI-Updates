@@ -140,5 +140,65 @@
     "verifiedAt": "2026-10-12",
     "verification": "Official pricing page reviewed manually",
     "kind": "application"
+  },
+  {
+    "id": "ideogram-free",
+    "tool": "Ideogram",
+    "plan": "Free",
+    "tasks": [
+      "graphics",
+      "anime"
+    ],
+    "devices": [
+      "browser"
+    ],
+    "monthlyUsd": 0,
+    "freeKind": "recurring",
+    "commercial": "allowed",
+    "allowance": "Weekly credits for eligible accounts; amount varies.",
+    "notes": "For still images and character references, not animation. Free images are public. Weekly credits require an eligible Google, Apple or Microsoft sign-in.",
+    "upgrade": "Paid plans add private images and priority credits.",
+    "source": "https://ideogram.ai/pricing/",
+    "verifiedAt": "2026-10-13"
+  },
+  {
+    "id": "pika-starter",
+    "tool": "Pika",
+    "plan": "Starter",
+    "tasks": [
+      "video",
+      "anime"
+    ],
+    "devices": [
+      "browser"
+    ],
+    "monthlyUsd": 10,
+    "freeKind": "none",
+    "commercial": "not-included",
+    "allowance": "900 credits per month.",
+    "notes": "Short video generation; test character consistency. Commercial license is not included.",
+    "upgrade": "Creator includes a commercial license.",
+    "source": "https://pika.art/pricing",
+    "verifiedAt": "2026-10-13"
+  },
+  {
+    "id": "pika-creator",
+    "tool": "Pika",
+    "plan": "Creator",
+    "tasks": [
+      "video",
+      "anime"
+    ],
+    "devices": [
+      "browser"
+    ],
+    "monthlyUsd": 35,
+    "freeKind": "none",
+    "commercial": "allowed",
+    "allowance": "3,150 credits per month.",
+    "notes": "Commercial license included subject to provider terms. Credit usage depends on the model and settings.",
+    "upgrade": "Test a short clip before committing to a full project.",
+    "source": "https://pika.art/pricing",
+    "verifiedAt": "2026-10-13"
   }
 ]

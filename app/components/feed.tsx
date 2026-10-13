@@ -22,7 +22,7 @@ export async function Feed({ kind, params }: { kind: FeedKind; params: Record<st
       <span className={health.delayed || health.failed ? "health-warning" : ""}>{health.delayed} overdue · {health.failed} reporting errors</span>
       <details><summary>About freshness</summary><p>Collection is scheduled every 15 minutes; runs may be delayed. Overdue means no successful feed check in one hour. A successful check may contain no new articles. {health.pending} qualifying stories await enrichment. Unclassified stories appear in News until categorized. Coverage reflects our selected feeds, not every worldwide event.</p></details>
     </section>
-    <div className="feed-heading"><div><p className="eyebrow">THE LATEST</p><h2>{updates ? "AI Updates" : "AI News"}</h2></div><span className="small-copy">Newest stories first</span></div>
+    <div className="feed-heading"><div><p className="eyebrow">THE LATEST</p><h2>{updates ? "AI Updates" : "AI News"}</h2></div><span className="small-copy">Newest publication first</span></div>
     <form className="feed-controls" action={`/${kind}`} method="get">
       <label><span>Category</span><select name="category" defaultValue={options.category}><option value="all">All categories</option>{categories.map(c => <option value={c} key={c}>{c.replaceAll("_", " ")}</option>)}</select></label>
       <label className="search-label"><span>Search stories</span><input name="q" defaultValue={options.query} maxLength={160} placeholder="Search companies, models or topics…" /></label>
@@ -32,7 +32,7 @@ export async function Feed({ kind, params }: { kind: FeedKind; params: Record<st
     {stories.length ? <div className="news-grid">{stories.map(s => {
       const url = externalUrl(s.url);
       return <article className="news-card" key={s.id}>
-        <div className="card-kicker"><span className="category-pill">{(s.category ?? "unclassified").replaceAll("_", " ")}</span><span>{ago(s.first_seen_at)}</span></div>
+        <div className="card-kicker"><span className="category-pill">{(s.category ?? "unclassified").replaceAll("_", " ")}</span><span>{ago(s.published_at)}</span></div>
         <h3>{url ? <a href={url} target="_blank" rel="noopener noreferrer">{s.title}<span className="external-arrow" aria-hidden="true"> ↗</span><span className="sr-only"> (opens publisher in a new tab)</span></a> : s.title}</h3>
         {s.one_liner && s.one_liner !== s.title && <p className="card-summary">{s.one_liner}</p>}
         <div className="card-footer"><span>{s.source_name}<br /><span className="small-copy">Published {ymd(s.published_at)}</span></span><Link href={`/story/${s.id}`}>Summary &amp; sources <span aria-hidden="true">→</span><span className="sr-only"> for {s.title}</span></Link></div>

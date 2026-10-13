@@ -20,7 +20,7 @@ export async function getFeed(kind: FeedKind, options: FeedOptions): Promise<Fee
       from story_articles sa join articles a on a.id = sa.article_id
       join sources s on s.id = a.source_id
       where sa.story_id = st.id and a.url ~* '^https?://'
-      order by s.weight desc, a.published_at asc nulls last, a.id asc
+      order by a.published_at desc nulls last, s.weight desc, a.id desc
       limit 1
     ) publisher on true
     where (case when ${kind} = 'updates'
@@ -32,7 +32,7 @@ export async function getFeed(kind: FeedKind, options: FeedOptions): Promise<Fee
         where sa.story_id = st.id
           and a.search_full @@ websearch_to_tsquery('english', ${options.query})
       ))
-    order by st.first_seen_at desc, st.id desc
+    order by publisher.published_at desc nulls last, st.id desc
     limit 21 offset ${(options.page - 1) * 20}
   ` as FeedStory[];
 }
