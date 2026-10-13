@@ -17,6 +17,8 @@ async function main() {
       const stories = await getFeed(kind, {category:"all", query:"", page:1});
       console.log(`Feed check: ${kind} returned ${stories.length} stories`);
       assert.ok(stories.length > 0, `${kind} must contain collected stories`);
+      const dates = stories.map(story => story.published_at ? new Date(story.published_at).getTime() : -Infinity);
+      assert.ok(dates.every((date, index) => index === 0 || dates[index - 1] >= date), "Feed must show newest publication first");
     }
     const health = await getFeedHealth();
     console.log(`Feed check: ${health.active} active sources`);
