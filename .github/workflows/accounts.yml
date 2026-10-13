@@ -1,0 +1,37 @@
+name: customer-account-setup
+on:
+  push:
+    branches: [codex/ai-pulse-product, main]
+    paths:
+      - 'db/007_customer_accounts.sql'
+      - 'src/setup-accounts.ts'
+      - 'tests/accounts-integration.ts'
+      - '.github/workflows/accounts.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: customer-account-schema
+  cancel-in-progress: false
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run typecheck
+      - run: npm run build
+      - name: Apply additive account schema
+        run: npx tsx src/setup-accounts.ts
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: Check account isolation and recovery
+        run: npx tsx tests/accounts-integration.ts
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}

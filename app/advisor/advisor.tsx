@@ -5,6 +5,8 @@ import { ymd } from "@/lib/format";
 import { externalUrl } from "@/lib/links";
 
 export function Advisor({ plans }: { plans: CatalogPlan[] }) {
+  const [saveStatus, setSaveStatus] = useState("");
+  const [saving, setSaving] = useState(false);
   const [task, setTask] = useState<Task>("anime");
   const [device, setDevice] = useState<Device>("browser");
   const [goal, setGoal] = useState("");
@@ -14,7 +16,7 @@ export function Advisor({ plans }: { plans: CatalogPlan[] }) {
   const [result, setResult] = useState<{ request: Requirements; goal: string; plans: CatalogPlan[] } | null>(null);
   return <>
     <form className="advisor-form" onSubmit={event => {
-      event.preventDefault();
+      event.preventDefault(); setSaveStatus("");
       const request = { task, device, budget: Number(budget), commercial, recurringFree };
       setResult({ request, goal: goal.trim(), plans: recommend(plans, request) });
     }}>
@@ -27,6 +29,10 @@ export function Advisor({ plans }: { plans: CatalogPlan[] }) {
     </form>
     <section className="advisor-results" aria-live="polite" aria-atomic="true">{result && <>
       <div className="feed-heading"><div><p className="eyebrow">YOUR SHORTLIST</p><h2>{WORKFLOWS[result.request.task].title}</h2></div><span className="small-copy">Ordered by price, not quality</span></div>
+      <button className="primary-button" disabled={saving} onClick={async () => {
+        setSaving(true); setSaveStatus("");
+        try { const response = await fetch("/api/projects", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: result.goal.slice(0,100), goal: result.goal, requirements: result.request }) }); const data = await response.json(); setSaveStatus(response.ok ? "Saved. Open My projects to find your brief on any device." : data.error ?? "Could not save."); } catch { setSaveStatus("Connection failed. Try again."); } finally { setSaving(false); }
+      }}>{saving ? "Saving…" : "Save this project"}</button><p role="status" className="small-copy">{saveStatus}</p>
       <p>For: {result.goal}</p><p className="small-copy">Matching your submitted requirements: up to ${result.request.budget}/month · {result.request.device} · {result.request.commercial ? "commercial use" : "personal use"}{result.request.recurringFree ? " · recurring free only" : ""}. This is a small curated catalog, not a complete market comparison. Plan prices are per tool, before taxes and extra usage; they are not a complete project estimate.</p>
       {!result.plans.length ? <div className="empty-panel"><h3>No verified match for these requirements</h3><p>Try a different budget or category. Missing or older-than-30-day evidence is excluded; we won’t substitute an unsupported recommendation.</p></div> : <div className="news-grid">{result.plans.map(plan => <article className="news-card" key={plan.id}>
         <div className="card-kicker"><span className="category-pill">{plan.monthlyUsd === 0 ? (plan.freeKind === "one-time" ? "One-time free credits" : "Recurring free allowance") : "Paid option"}</span><span>${plan.monthlyUsd}/mo</span></div>

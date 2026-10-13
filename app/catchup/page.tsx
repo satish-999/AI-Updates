@@ -1,16 +1,15 @@
 import Link from "next/link";
 import { Nav } from "../nav";
-import { cookies } from "next/headers";
+import { requireAccount } from "@/lib/current-user";
 import { getCatchup } from "@/lib/db";
-import { VIEWER_COOKIE } from "@/lib/auth";
+
 
 export const dynamic = "force-dynamic";
 
 /** What mattered that you have not opened yet — not an unread counter. */
 export default async function Catchup() {
-  // Read state is per browser, so two people sharing the password each get
-  // their own Catch-up rather than clearing it for one another.
-  const viewer = (await cookies()).get(VIEWER_COOKIE)?.value ?? "anonymous";
+  const user = await requireAccount();
+  const viewer = `user:${user.id}`;
   const stories = await getCatchup(viewer, 10);
 
   return (
