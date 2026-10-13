@@ -4,6 +4,7 @@ import { createAccount, authenticate, createSession, sessionAccount, revokeSessi
 import { sqlClient } from "../lib/db";
 import { saveProject, deleteProject, listProjects } from "../lib/projects";
 import { changePassword, deleteAccount } from "../lib/account-settings";
+import { getFeed, getFeedHealth } from "../lib/feeds";
 import { tokenHash } from "../lib/passwords";
 async function main() {
   const suffix = randomUUID().replaceAll("-", "").slice(0,16);
@@ -12,6 +13,13 @@ async function main() {
   const bucket = `test:${suffix}`;
   const sql = sqlClient();
   try {
+    for (const kind of ["updates", "news"] as const) {
+      const stories = await getFeed(kind, {category:"all", query:"", page:1});
+      console.log(`Feed check: ${kind} returned ${stories.length} stories`);
+      assert.ok(stories.length > 0, `${kind} must contain collected stories`);
+    }
+    const health = await getFeedHealth();
+    console.log(`Feed check: ${health.active} active sources`);
     const a = await createAccount(names[0], password), b = await createAccount(names[1], password);
     assert.ok(a && b);
     assert.equal(await createAccount(names[0], password),null);

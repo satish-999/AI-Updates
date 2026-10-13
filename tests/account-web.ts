@@ -49,7 +49,12 @@ async function main() {
   if (!nextCookie) throw new Error("Login session missing");
   phase = "customer pages";
   for (const path of ["/updates", "/news", "/advisor", "/account"]) {
-    requireStatus((await fetch(origin+path,{headers:{Cookie:nextCookie},redirect:"manual",signal:AbortSignal.timeout(30000)})).status,200);
+    const response = await fetch(origin+path,{headers:{Cookie:nextCookie},redirect:"manual",signal:AbortSignal.timeout(30000)});
+    requireStatus(response.status,200);
+    if (path === "/updates" || path === "/news") {
+      const html = await response.text();
+      if (!html.includes('class="news-card"')) throw new Error(`${path} contains no story cards`);
+    }
   }
   phase = "change password";
   const changed = await post("/api/account",{action:"password",password,newPassword:password+"new"},nextCookie);
