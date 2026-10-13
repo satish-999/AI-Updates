@@ -13,7 +13,11 @@ export async function authEndpoint(request: NextRequest, mode: "login" | "signup
   try { body = await jsonBody(request); } catch { return reply({ error: "Invalid request." }, 400); }
   const username = normalizeUsername(body.username);
   if (!username || !validPassword(body.password)) return reply({ error: "Use a valid username and a password of 12–128 characters." }, 400);
+  let stage = "configuration";
   try {
+    if (!process.env.AUTH_SECRET) throw new Error("AUTH_CONFIG");
+    if (!process.env.DATABASE_URL) throw new Error("DATABASE_CONFIG");
+    stage = "rate-limit";
     const ip = clientBucket(request);
     const limit = mode === "signup" ? 5 : 15;
     const seconds = mode === "signup" ? 3600 : 900;
@@ -21,6 +25,7 @@ export async function authEndpoint(request: NextRequest, mode: "login" | "signup
       || !await reserveLimit(`auth:${mode}:name:${username}`, 15, 900)) {
       return reply({ error: "Too many attempts. Please try again later." }, 429);
     }
+    stage = "credentials";
     if (mode === "recover") {
       const code = typeof body.recoveryCode === "string" ? body.recoveryCode.trim().toLowerCase() : "";
       const recoveryCode = await recoverAccount(username, code, body.password);
@@ -29,12 +34,17 @@ export async function authEndpoint(request: NextRequest, mode: "login" | "signup
     const created = mode === "signup" ? await createAccount(username, body.password) : null;
     const user = mode === "signup" ? created?.user : await authenticate(username, body.password);
     if (!user) return reply({ error: mode === "signup" ? "That username is unavailable." : "The username or password is incorrect." }, 400);
+    stage = "session";
     const token = await createSession(user.id, user.auth_version);
     const response = reply({ ok: true, recoveryCode: created?.recoveryCode });
     response.cookies.set(COOKIE, token, cookieOptions());
     return response;
-  } catch {
+  } catch (error) {
+    const reference = stage === "configuration"
+      ? (error instanceof Error && error.message === "AUTH_CONFIG" ? "ACCOUNT_CONFIG_AUTH" : "ACCOUNT_CONFIG_DATABASE")
+      : stage === "rate-limit" ? "ACCOUNT_DATABASE" : stage === "session" ? "ACCOUNT_SESSION" : "ACCOUNT_CREDENTIALS";
+    console.error("Account service failure", { reference });
     // Never echo connection strings, SQL, password hashes or recovery material.
-    return reply({ error: "Account services are temporarily unavailable. Please try again shortly." }, 503);
+    return reply({ error: "Account services are temporarily unavailable. Please try again shortly.", reference }, 503);
   }
 }

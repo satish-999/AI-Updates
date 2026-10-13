@@ -14,7 +14,7 @@ export function AuthForm({ mode }: { mode: "login" | "signup" | "recover" }) {
       try {
         const response = await fetch(`/api/${mode}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(values) });
         const data = await response.json();
-        if (!response.ok) { setError(data.error ?? "Please try again."); return; }
+        if (!response.ok) { setError((data.error ?? "Please try again.") + (typeof data.reference === "string" && /^ACCOUNT_[A-Z_]+$/.test(data.reference) ? ` Reference: ${data.reference}` : "")); return; }
         if (data.recoveryCode) setCode(data.recoveryCode);
         else window.location.assign("/updates");
       } catch { setError("Unable to connect. Please try again."); } finally { setBusy(false); }

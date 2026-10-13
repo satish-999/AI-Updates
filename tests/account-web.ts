@@ -23,7 +23,12 @@ async function main() {
   phase = "cross-origin rejection";
   requireStatus((await post("/api/signup",{username,password},"","https://untrusted.example")).status,403);
   phase = "customer signup";
-  const signup = await post("/api/signup",{username,password});requireStatus(signup.status,200);
+  const signup = await post("/api/signup",{username,password});
+  if (signup.status !== 200) {
+    const failure = await signup.json().catch(() => ({}));
+    const reference = typeof failure.reference === "string" && /^ACCOUNT_[A-Z_]+$/.test(failure.reference) ? failure.reference : "unavailable";
+    throw new Error(`HTTP ${signup.status}; reference ${reference}`);
+  }
   const data = await signup.json();
   if (typeof data.recoveryCode !== "string" || data.recoveryCode.length !== 64) throw new Error("Recovery code missing");
   const cookie = signup.headers.getSetCookie().find(c => c.startsWith("pulse_account_session="))?.split(";")[0];
