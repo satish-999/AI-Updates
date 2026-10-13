@@ -6,6 +6,7 @@ on:
       - 'db/007_customer_accounts.sql'
       - 'src/setup-accounts.ts'
       - 'tests/accounts-integration.ts'
+      - 'tests/account-web.ts'
       - '.github/workflows/accounts.yml'
   workflow_dispatch:
 permissions:
@@ -33,5 +34,9 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - name: Check account isolation and recovery
         run: npx tsx tests/accounts-integration.ts
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - name: Verify deployed customer signup
+        run: npx tsx tests/account-web.ts
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
