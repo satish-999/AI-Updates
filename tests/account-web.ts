@@ -44,7 +44,24 @@ async function main() {
   phase = "revoked session rejection";
   requireStatus((await post("/api/projects",{},cookie)).status,401);
   phase = "password login";
-  requireStatus((await post("/api/login",{username,password})).status,200);
+  const login = await post("/api/login",{username,password}); requireStatus(login.status,200);
+  const nextCookie = login.headers.getSetCookie().find(c => c.startsWith("pulse_account_session="))?.split(";")[0];
+  if (!nextCookie) throw new Error("Login session missing");
+  phase = "customer pages";
+  for (const path of ["/updates", "/news", "/advisor", "/account"]) {
+    requireStatus((await fetch(origin+path,{headers:{Cookie:nextCookie},redirect:"manual",signal:AbortSignal.timeout(30000)})).status,200);
+  }
+  phase = "change password";
+  const changed = await post("/api/account",{action:"password",password,newPassword:password+"new"},nextCookie);
+  requireStatus(changed.status,200);
+  if (typeof (await changed.json()).recoveryCode !== "string") throw new Error("Replacement recovery code missing");
+  requireStatus((await post("/api/projects",{},nextCookie)).status,401);
+  const newLogin = await post("/api/login",{username,password:password+"new"}); requireStatus(newLogin.status,200);
+  const finalCookie = newLogin.headers.getSetCookie().find(c => c.startsWith("pulse_account_session="))?.split(";")[0];
+  if (!finalCookie) throw new Error("New login session missing");
+  phase = "delete temporary account";
+  requireStatus((await post("/api/account",{action:"delete",password:password+"new",confirmation:username},finalCookie)).status,200);
+  requireStatus((await post("/api/projects",{},finalCookie)).status,401);
   console.log("Deployed visitor flow passed: public signup, recovery code, signed-in projects, save, logout and password login.");
 }
 main().catch(error => { console.error(`Web account check failed at ${phase}: ${error instanceof Error ? error.message : "unexpected error"}`); process.exitCode=1; }).finally(async () => {
