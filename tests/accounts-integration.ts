@@ -3,6 +3,7 @@ import { randomUUID } from "node:crypto";
 import { createAccount, authenticate, createSession, sessionAccount, revokeSession, recoverAccount, reserveLimit } from "../lib/accounts";
 import { sqlClient } from "../lib/db";
 import { saveProject, deleteProject, listProjects } from "../lib/projects";
+import { changePassword, deleteAccount } from "../lib/account-settings";
 import { tokenHash } from "../lib/passwords";
 async function main() {
   const suffix = randomUUID().replaceAll("-", "").slice(0,16);
@@ -33,6 +34,17 @@ async function main() {
     await sql`update app_sessions set expires_at=now()-interval '1 minute' where token_hash=${tokenHash(next)}`;
     assert.equal(await sessionAccount(next),null);
     const last=await createSession(refreshed.id,refreshed.auth_version);await revokeSession(last);assert.equal(await sessionAccount(last),null);
+    assert.equal(await changePassword(refreshed, "incorrect password", password), null);
+    const beforeChange = await createSession(refreshed.id, refreshed.auth_version);
+    assert.ok(await changePassword(refreshed, password+"new", password+"changed"));
+    assert.equal(await sessionAccount(beforeChange), null);
+    assert.equal(await recoverAccount(names[0], newCode, password), null);
+    const changedUser = await authenticate(names[0], password+"changed"); assert.ok(changedUser);
+    assert.equal(await deleteAccount(changedUser, "incorrect password"), false);
+    assert.ok(await deleteAccount(changedUser, password+"changed"));
+    assert.equal(await authenticate(names[0], password+"changed"), null);
+    assert.equal((await listProjects(changedUser.id)).length, 0);
+    assert.ok(await authenticate(names[1], password));
     console.log("Account integration passed: passwords, duplicate names, session expiry/revocation, recovery rotation, ownership isolation and concurrent limits.");
   } finally {
     await sql`delete from app_rate_limits where bucket=${bucket}`;
