@@ -1,9 +1,11 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { COOKIE } from "@/lib/auth";
-
+import { COOKIE, cookieOptions } from "@/lib/auth";
+import { revokeSession } from "@/lib/accounts";
+import { sameOrigin } from "@/lib/request-security";
 export async function POST(req: NextRequest) {
+  if (!sameOrigin(req)) return new NextResponse("Forbidden", { status: 403 });
+  await revokeSession(req.cookies.get(COOKIE)?.value);
   const res = NextResponse.redirect(new URL("/login", req.url), 303);
-  // Only the session goes. The viewer id stays so read history survives.
-  res.cookies.set(COOKIE, "", { path: "/", maxAge: 0 });
+  res.cookies.set(COOKIE, "", { ...cookieOptions(), maxAge: 0 });
   return res;
 }

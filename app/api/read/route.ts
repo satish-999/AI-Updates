@@ -1,15 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { markRead } from "@/lib/db";
-import { VIEWER_COOKIE } from "@/lib/auth";
-
-/** Marks a story seen for THIS viewer. Powers Catch-up. */
+import { COOKIE } from "@/lib/auth";
+import { sessionAccount } from "@/lib/accounts";
+import { sameOrigin, jsonBody } from "@/lib/request-security";
 export async function POST(req: NextRequest) {
-  const { storyId } = (await req.json()) as { storyId?: number };
-  const viewer = req.cookies.get(VIEWER_COOKIE)?.value;
-
-  if (!storyId || !Number.isFinite(storyId) || !viewer) {
-    return NextResponse.json({ ok: false }, { status: 400 });
-  }
-  await markRead(viewer, storyId);
+  if (!sameOrigin(req)) return NextResponse.json({ ok: false }, { status: 403 });
+  const user = await sessionAccount(req.cookies.get(COOKIE)?.value);
+  if (!user) return NextResponse.json({ ok: false }, { status: 401 });
+  let storyId: unknown;
+  try { ({ storyId } = await jsonBody(req)); } catch { return NextResponse.json({ ok: false }, { status: 400 }); }
+  if (typeof storyId !== "number" || !Number.isSafeInteger(storyId) || storyId < 1) return NextResponse.json({ ok: false }, { status: 400 });
+  await markRead(`user:${user.id}`, storyId);
   return NextResponse.json({ ok: true });
 }

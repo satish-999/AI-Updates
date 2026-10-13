@@ -1,0 +1,204 @@
+[
+  {
+    "id": "firefly-free",
+    "tool": "Adobe Firefly",
+    "plan": "Free",
+    "tasks": [
+      "graphics",
+      "video",
+      "anime",
+      "audio"
+    ],
+    "devices": [
+      "browser",
+      "phone"
+    ],
+    "monthlyUsd": 0,
+    "freeKind": "recurring",
+    "commercial": "allowed",
+    "allowance": "Limited daily generations; exact allowance depends on the feature.",
+    "notes": "Use Adobe Firefly models for the commercial-use guidance here; partner models have separate terms. Quality and character consistency need a sample test.",
+    "upgrade": "Standard adds a monthly credit allowance for premium features.",
+    "source": "https://www.adobe.com/products/firefly/plans.html",
+    "verifiedAt": "2026-10-12",
+    "verification": "Official pricing page reviewed manually",
+    "kind": "application"
+  },
+  {
+    "id": "firefly-standard",
+    "tool": "Adobe Firefly",
+    "plan": "Standard",
+    "tasks": [
+      "graphics",
+      "video",
+      "anime",
+      "audio"
+    ],
+    "devices": [
+      "browser",
+      "phone"
+    ],
+    "monthlyUsd": 9.99,
+    "freeKind": "none",
+    "commercial": "allowed",
+    "allowance": "2,000 generative credits per month; standard image features included.",
+    "notes": "Premium video, audio and partner-model work consumes credits. Commercial guidance here applies to Adobe Firefly models.",
+    "upgrade": "Consider this when the free allowance is too small, after testing the output.",
+    "source": "https://www.adobe.com/products/firefly/plans.html",
+    "verifiedAt": "2026-10-12",
+    "verification": "Official pricing page reviewed manually",
+    "kind": "application"
+  },
+  {
+    "id": "runway-free",
+    "tool": "Runway",
+    "plan": "Free",
+    "tasks": [
+      "video",
+      "anime",
+      "graphics"
+    ],
+    "devices": [
+      "browser",
+      "phone"
+    ],
+    "monthlyUsd": 0,
+    "freeKind": "one-time",
+    "commercial": "unknown",
+    "allowance": "125 credits once, not a recurring monthly allowance.",
+    "notes": "A limited selection of models for testing concepts. Commercial rights and export restrictions need a separate check.",
+    "upgrade": "Standard adds recurring credits and watermark-free outputs.",
+    "source": "https://runway.com/pricing",
+    "verifiedAt": "2026-10-12",
+    "verification": "Official pricing page reviewed manually",
+    "kind": "application"
+  },
+  {
+    "id": "runway-standard",
+    "tool": "Runway",
+    "plan": "Standard",
+    "tasks": [
+      "video",
+      "anime",
+      "graphics"
+    ],
+    "devices": [
+      "browser",
+      "phone"
+    ],
+    "monthlyUsd": 15,
+    "freeKind": "none",
+    "commercial": "unknown",
+    "allowance": "625 credits each month; model, duration and resolution affect usage.",
+    "notes": "Watermark-free outputs. The $12/month display requires annual billing; this comparison uses the $15 monthly option. Commercial rights still need verification.",
+    "upgrade": "Useful for repeated video experiments once the one-time allowance is exhausted.",
+    "source": "https://runway.com/pricing",
+    "verifiedAt": "2026-10-12",
+    "verification": "Official pricing page reviewed manually",
+    "kind": "application"
+  },
+  {
+    "id": "eleven-free",
+    "tool": "ElevenLabs",
+    "plan": "Free",
+    "tasks": [
+      "audio"
+    ],
+    "devices": [
+      "browser",
+      "phone"
+    ],
+    "monthlyUsd": 0,
+    "freeKind": "recurring",
+    "commercial": "not-included",
+    "allowance": "10,000 credits monthly for a shared creative allowance.",
+    "notes": "Text-to-speech and sound effects are listed. The free plan does not include the paid commercial license.",
+    "upgrade": "Starter adds a commercial license and a larger credit allowance.",
+    "source": "https://elevenlabs.io/pricing",
+    "verifiedAt": "2026-10-12",
+    "verification": "Official pricing page reviewed manually",
+    "kind": "application"
+  },
+  {
+    "id": "eleven-starter",
+    "tool": "ElevenLabs",
+    "plan": "Starter",
+    "tasks": [
+      "audio"
+    ],
+    "devices": [
+      "browser",
+      "phone"
+    ],
+    "monthlyUsd": 6,
+    "freeKind": "none",
+    "commercial": "allowed",
+    "allowance": "30,000 credits monthly, shared across products.",
+    "notes": "Commercial license included, subject to provider terms. This uses the regular monthly price, excluding first-month promotions and taxes.",
+    "upgrade": "Consider for commercial voiceover work or when the free credit allowance is insufficient.",
+    "source": "https://elevenlabs.io/pricing",
+    "verifiedAt": "2026-10-12",
+    "verification": "Official pricing page reviewed manually",
+    "kind": "application"
+  },
+  {
+    "id": "ideogram-free",
+    "tool": "Ideogram",
+    "plan": "Free",
+    "tasks": [
+      "graphics",
+      "anime"
+    ],
+    "devices": [
+      "browser"
+    ],
+    "monthlyUsd": 0,
+    "freeKind": "recurring",
+    "commercial": "allowed",
+    "allowance": "Weekly credits for eligible accounts; amount varies.",
+    "notes": "For still images and character references, not animation. Free images are public. Weekly credits require an eligible Google, Apple or Microsoft sign-in.",
+    "upgrade": "Paid plans add private images and priority credits.",
+    "source": "https://ideogram.ai/pricing/",
+    "verifiedAt": "2026-10-13"
+  },
+  {
+    "id": "pika-starter",
+    "tool": "Pika",
+    "plan": "Starter",
+    "tasks": [
+      "video",
+      "anime"
+    ],
+    "devices": [
+      "browser"
+    ],
+    "monthlyUsd": 10,
+    "freeKind": "none",
+    "commercial": "not-included",
+    "allowance": "900 credits per month.",
+    "notes": "Short video generation; test character consistency. Commercial license is not included.",
+    "upgrade": "Creator includes a commercial license.",
+    "source": "https://pika.art/pricing",
+    "verifiedAt": "2026-10-13"
+  },
+  {
+    "id": "pika-creator",
+    "tool": "Pika",
+    "plan": "Creator",
+    "tasks": [
+      "video",
+      "anime"
+    ],
+    "devices": [
+      "browser"
+    ],
+    "monthlyUsd": 35,
+    "freeKind": "none",
+    "commercial": "allowed",
+    "allowance": "3,150 credits per month.",
+    "notes": "Commercial license included subject to provider terms. Credit usage depends on the model and settings.",
+    "upgrade": "Test a short clip before committing to a full project.",
+    "source": "https://pika.art/pricing",
+    "verifiedAt": "2026-10-13"
+  }
+]
